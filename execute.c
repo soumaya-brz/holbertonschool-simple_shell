@@ -1,24 +1,19 @@
 #include "shell.h"
 
-/**
- * execute_command - resolve cmd then fork/execve/wait
- * fork MUST NOT be called if command doesn’t exist
- * @argv: tokenized argv
- * @progname: shell name (argv[0])
- * @cmd_count: command index
- *
- * Return: 0
- */
-int execute_command(char **argv, char *progname, unsigned long cmd_count)
+int execute_command(char **argv, char *progname,
+		    unsigned long count, int *last_status)
 {
-	char *cmd_path;
+	char *path;
 	pid_t pid;
 	int status;
+	char *empty_env[] = { NULL };
+	char **envp = environ ? environ : empty_env;
 
-	cmd_path = resolve_command(argv[0]);
-	if (!cmd_path)
+	path = resolve_command(argv[0]);
+	if (!path)
 	{
-		print_not_found(progname, cmd_count, argv[0]);
+		print_not_found(progname, count, argv[0]);
+		*last_status = 127;
 		return (0);
 	}
 
@@ -26,19 +21,26 @@ int execute_command(char **argv, char *progname, unsigned long cmd_count)
 	if (pid == -1)
 	{
 		perror(progname);
-		free(cmd_path);
+		free(path);
+		*last_status = 1;
 		return (0);
 	}
 
 	if (pid == 0)
 	{
-		execve(cmd_path, argv, environ);
+		execve(path, argv, envp);
 		perror(progname);
-		free(cmd_path);
+		free(path);
 		_exit(126);
 	}
 
 	waitpid(pid, &status, 0);
-	free(cmd_path);
+	free(path);
+
+	if (WIFEXITED(status))
+		*last_status = WEXITSTATUS(status);
+	else
+		*last_status = 1;
+
 	return (0);
 }
