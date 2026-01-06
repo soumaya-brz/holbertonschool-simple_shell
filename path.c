@@ -1,16 +1,16 @@
 #include "shell.h"
 
 /**
- * get_env_value - get value of environment variable name
- * @name: variable name (e.g. "PATH")
+ * get_env_value - get environment value by name
+ * @name: variable name (ex: "PATH")
  *
- * Return: pointer to value inside environ, or NULL
+ * Return: pointer to value inside environ or NULL
  */
 char *get_env_value(const char *name)
 {
 	size_t i, nlen;
 
-	if (!name)
+	if (!name || !environ)
 		return (NULL);
 
 	nlen = strlen(name);
@@ -28,7 +28,7 @@ char *get_env_value(const char *name)
  * @dir: directory
  * @cmd: command
  *
- * Return: malloc'd string "dir/cmd" or NULL
+ * Return: malloc'd string or NULL
  */
 char *build_path(const char *dir, const char *cmd)
 {
@@ -53,19 +53,21 @@ char *build_path(const char *dir, const char *cmd)
 }
 
 /**
- * resolve_command - resolve command using PATH (or direct path)
- * @cmd: command name (argv[0])
+ * resolve_command - resolve cmd using PATH, with edge cases:
+ * - if cmd has '/', treat as path
+ * - if PATH missing, use default "/bin:/usr/bin"
+ * - empty PATH elements mean current directory "."
+ * @cmd: command (argv[0])
  *
- * Return: malloc'd full path to execve, or NULL if not found
+ * Return: malloc'd resolved path or NULL if not found
  */
 char *resolve_command(char *cmd)
 {
-	char *path, *path_copy, *dir, *full;
+	char *path, *copy, *start, *end, *full;
 
 	if (!cmd || cmd[0] == '\0')
 		return (NULL);
 
-	/* If cmd contains '/', treat as path */
 	if (strchr(cmd, '/'))
 	{
 		if (access(cmd, X_OK) == 0)
@@ -75,25 +77,38 @@ char *resolve_command(char *cmd)
 
 	path = get_env_value("PATH");
 	if (!path)
+		path = "/bin:/usr/bin";
+
+	copy = strdup(path);
+	if (!copy)
 		return (NULL);
 
-	path_copy = strdup(path);
-	if (!path_copy)
-		return (NULL);
-
-	dir = strtok(path_copy, ":");
-	while (dir)
+	start = copy;
+	while (1)
 	{
-		full = build_path(dir, cmd);
+		end = strchr(start, ':');
+		if (end)
+			*end = '\0';
+
+		if (*start == '\0')
+			full = build_path(".", cmd);
+		else
+			full = build_path(start, cmd);
+
 		if (full && access(full, X_OK) == 0)
 		{
-			free(path_copy);
+			free(copy);
 			return (full);
 		}
+
 		free(full);
-		dir = strtok(NULL, ":");
+
+		if (!end)
+			break;
+
+		start = end + 1;
 	}
 
-	free(path_copy);
+	free(copy);
 	return (NULL);
 }

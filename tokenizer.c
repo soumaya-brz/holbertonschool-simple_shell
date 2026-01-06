@@ -1,15 +1,14 @@
 #include "shell.h"
 
 /**
- * count_words - counts tokens separated by DELIMS
- * @line: input line (modified by strtok elsewhere, so only use before split)
+ * count_words - count tokens in a line using DELIMS
+ * @line: input line
  *
  * Return: number of words
  */
 int count_words(char *line)
 {
-	int count = 0;
-	int in_word = 0;
+	int count = 0, in_word = 0;
 	size_t i;
 
 	if (!line)
@@ -29,10 +28,10 @@ int count_words(char *line)
 }
 
 /**
- * split_line - splits line into argv (tokens point inside line buffer)
- * @line: input line (will be modified by strtok)
+ * split_line - split line into argv array (tokens point inside line)
+ * @line: input line (modified by strtok)
  *
- * Return: NULL-terminated array of tokens (malloc'd)
+ * Return: malloc'd argv array (must free(argv))
  */
 char **split_line(char *line)
 {
@@ -40,7 +39,20 @@ char **split_line(char *line)
 	int words, i = 0;
 	char *tok;
 
+	if (!line)
+		return (NULL);
+
 	words = count_words(line);
+	if (words == 0)
+	{
+		/* strtok would return NULL anyway */
+		argv = malloc(sizeof(char *));
+		if (!argv)
+			return (NULL);
+		argv[0] = NULL;
+		return (argv);
+	}
+
 	argv = malloc(sizeof(char *) * (words + 1));
 	if (!argv)
 		return (NULL);
