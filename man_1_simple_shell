@@ -1,0 +1,42 @@
+.TH SIMPLE_SHELL 1 "Holberton School" "Simple Shell Project"
+.SH NAME
+simple_shell \- a simple UNIX command line interpreter
+
+.SH SYNOPSIS
+.B simple_shell
+.br
+.B ./hsh
+
+.SH DESCRIPTION
+simple_shell is a basic UNIX command line interpreter.
+It reads commands from standard input and executes them.
+
+The shell works in both interactive and non-interactive modes.
+It uses fork and execve to execute commands.
+
+.SH FEATURES
+Display a prompt and wait for user input.
+Execute commands with arguments.
+Search executables using the PATH environment variable.
+Implement built-in commands such as exit and env.
+Handle end of file (EOF).
+
+.SH BUILTINS
+.TP
+.B exit
+Exit the shell.
+.TP
+.B env
+Print the current environment.
+
+.SH ENVIRONMENT
+The shell uses the PATH environment variable to locate executables.
+
+.SH RETURN VALUE
+simple_shell returns 0 on success.
+
+.SH AUTHORS
+See AUTHORS file.
+
+.SH SEE ALSO
+sh(1)
