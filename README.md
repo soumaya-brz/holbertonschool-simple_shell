@@ -14,5 +14,3 @@ A minimal UNIX command interpreter written in C.
 ## Compilation
 ```bash
 gcc -Wall -Werror -Wextra -pedantic -std=gnu89 *.c -o hsh
-
-
