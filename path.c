@@ -75,4 +75,3 @@ char *resolve_command(char *cmd)
 	free(copy);
 	return (NULL);
 }
-
