@@ -38,6 +38,3 @@ char **split_line(char *line)
 	argv[i] = NULL;
 	return (argv);
 }
-
-
-
